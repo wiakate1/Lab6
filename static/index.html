@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>WebSocket Chat</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #ffe6f0;
+        padding: 20px;
+        max-width: 700px;
+        margin: auto;
+        color: #4a0033;
+      }
+
+      h2 {
+        text-align: center;
+        color: #d81b60;
+      }
+
+      #server-message {
+        background-color: #fce4ec;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        border-left: 5px solid #ec407a;
+        border-radius: 5px;
+        color: #880e4f;
+        font-weight: bold;
+      }
+
+      #log {
+        margin-bottom: 15px;
+        border: 1px solid #f8bbd0;
+        padding: 10px;
+        background-color: #fff0f5;
+        height: 200px;
+        overflow-y: auto;
+        border-radius: 4px;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+      }
+
+      #input-area {
+        display: flex;
+        gap: 10px;
+      }
+
+      input {
+        flex: 1;
+        padding: 10px;
+        font-size: 15px;
+        border: 1px solid #f48fb1;
+        border-radius: 4px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 15px;
+        background-color: #d81b60;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+      }
+
+      button:hover {
+        background-color: #ad1457;
+      }
+    </style>
+  </head>
+  <body onload="document.getElementById('msg').focus()">
+    <h2>WebSocket Chat</h2>
+
+    <div id="server-message">No messages yet.</div>
+    <div id="log"></div>
+
+    <div id="input-area">
+      <input type="text" id="msg" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+      const socket = new WebSocket("ws://localhost:3000/ws");
+
+      socket.onopen = () => {
+        console.log("Connected to WebSocket server");
+      };
+
+      socket.onmessage = function (event) {
+        const banner = document.getElementById("server-message");
+        banner.textContent = event.data;
+
+        const log = document.getElementById("log");
+        const msg = document.createElement("div");
+        msg.textContent = event.data;
+        log.appendChild(msg);
+        log.scrollTop = log.scrollHeight;
+      };
+
+      socket.onclose = () => {
+        const banner = document.getElementById("server-message");
+        banner.textContent = "Connection closed.";
+      };
+
+      function sendMessage() {
+        const input = document.getElementById("msg");
+        const text = input.value.trim();
+        if (text !== "") {
+          socket.send(text);
+          input.value = "";
+        }
+      }
+
+      document.getElementById("msg").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") sendMessage();
+      });
+    </script>
+  </body>
+</html>
